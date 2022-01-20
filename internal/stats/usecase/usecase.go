@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/dchebakov/tracker/internal/models"
 	"github.com/dchebakov/tracker/internal/stats"
 	"github.com/dchebakov/tracker/pkg/httperrors"
 	"go.uber.org/zap"
@@ -18,17 +19,30 @@ func NewStatsUseCase(logger *zap.SugaredLogger, statsRepo stats.Repository) stat
 	return &statsUC{logger: logger, statsRepo: statsRepo}
 }
 
-func (s *statsUC) UpdateStats(
+func (u *statsUC) UpdateStats(
 	ctx context.Context,
 	customerID int64,
 	hour time.Time,
 	valid bool,
 ) error {
-	err := s.statsRepo.UpdateStats(ctx, customerID, hour, valid)
+	err := u.statsRepo.UpdateStats(ctx, customerID, hour, valid)
 	if err != nil {
-		s.logger.Errorw("Failed to update stats", "cause", err)
+		u.logger.Errorw("Failed to update stats", "cause", err)
 		return httperrors.NewInternalServerError(err)
 	}
 
 	return nil
+}
+
+func (u *statsUC) GetStats(
+	ctx context.Context,
+	filter *stats.Filter,
+) ([]*models.HourlyStats, error) {
+	stats, err := u.statsRepo.GetStats(ctx, filter)
+	if err != nil {
+		u.logger.Errorw("Failed to fetch stats", "err", err, "filter", filter)
+		return nil, httperrors.NewInternalServerError(err)
+	}
+
+	return stats, nil
 }
