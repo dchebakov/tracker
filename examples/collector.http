@@ -1,5 +1,6 @@
 # Examples of using Collector API
-# for vscode users, install `REST Client` to use these examples (or use commented curl CLI calls).
+# for vscode users, install `REST Client` to use these examples
+# (for curl cli calls, see collector.md)
 
 @host = http://localhost:6000
 @method = api/v1/collect/

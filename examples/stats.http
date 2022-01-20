@@ -1,0 +1,25 @@
+# Examples of using Stats API
+# for vscode users, install `REST Client` to use these examples
+# (for curl cli calls, see stats.md)
+
+@host = http://localhost:6000
+@method = api/v1/stats/
+
+# Return all stats
+GET {{host}}/{{method}}
+
+###
+
+# Filter stats for the customer
+GET {{host}}/{{method}}?customerID=1
+
+###
+
+# Filter stats for the specific day
+GET {{host}}/{{method}}?day=2017-07-14
+
+
+###
+
+# Filter stats both for the customer and day
+GET {{host}}/{{method}}?customerID=1&day=2017-07-14
