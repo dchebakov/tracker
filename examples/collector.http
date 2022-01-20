@@ -1,0 +1,39 @@
+@host = http://localhost:6000
+@method = api/v1/collect/
+
+# Valid collector requst
+
+POST {{host}}/{{method}}
+Content-Type: application/json
+
+{
+  "customerID": 1,
+  "tagID": 2,
+  "userID": "aaaaaaaa-bbbb-cccc-1111-222222222222",
+  "remoteIP": "123.234.56.78",
+  "timestamp": 1500000000
+}
+
+###
+
+# Malformed JSON call
+
+POST {{host}}/api/v1/collect/
+Content-Type: application/json
+
+"{"
+
+
+###
+
+# Missing userID field
+
+POST {{host}}/{{method}}
+Content-Type: application/json
+
+{
+  "customerID": 1,
+  "tagID": 2,
+  "remoteIP": "123.234.56.78",
+  "timestamp": 1500000000
+}

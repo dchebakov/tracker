@@ -1,0 +1,12 @@
+@host = http://localhost:6000
+@method = api/v1/health
+
+# Health server check
+
+GET {{host}}/{{method}}/
+
+###
+
+# DB connection check
+
+GET {{host}}/{{method}}/readiness
