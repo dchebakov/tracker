@@ -10,7 +10,7 @@ import (
 
 // @title Tracker
 // @version 0.1.0
-// @description Track user statistics of valid/invalid API calls
+// @description Track users statistics of valid/invalid API calls
 // @host localhost:6000
 // @BasePath /
 func main() {

@@ -59,9 +59,9 @@ curl --request POST \
 - Blocked IP so the request will be counted as invalid
 
 ```bash
-curl --request GET \
-  --url content-type:%20application/json \
-  --header 'user-agent: vscode-restclient' \
+curl --request POST \
+  --url http://localhost:6000/api/v1/collect/ \
+  --header 'content-type: application/json' \
   --data '{"customerID": 1,"tagID": 2,"userID": "aaaaaaaa-bbbb-cccc-1111-222222222222","remoteIP": "213.070.64.33","timestamp": 1500000000}'
 ```
 

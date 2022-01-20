@@ -13,11 +13,18 @@ import (
 )
 
 const databaseMigrationPath = "file://migrations/"
-const databaseDriverName = "postgres"
+const databaseDriverName = "pgx"
 
 func main() {
 	cfg := config.New()
-	dsn := fmt.Sprintf("%s://%s:%s/%s?user=%s&password=%s&sslmode=disable", databaseDriverName, cfg.Database.Host, cfg.Database.Port, cfg.Database.Name, cfg.Database.User, cfg.Database.Pass)
+	dsn := fmt.Sprintf(
+		"host=%s port=%s user=%s dbname=%s sslmode=disable password=%s",
+		cfg.Database.Host,
+		cfg.Database.Port,
+		cfg.Database.User,
+		cfg.Database.Name,
+		cfg.Database.Pass,
+	)
 	db, err := sql.Open(databaseDriverName, dsn)
 	if err != nil {
 		log.Fatalf("Error opening database: %v", err)

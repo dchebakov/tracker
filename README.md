@@ -1,6 +1,6 @@
 # Tracker app
 
-This app is intended to track user statistics of valid/invalid API calls.
+This app is intended to track users statistics of valid/invalid API calls.
 
 ## Install
 
@@ -12,7 +12,7 @@ API build on top of the Go, Echo, sqlx and Postgres. All infra tasks (start API,
 cp env.example.docker .env
 ```
 
-2. Start database:
+2.Start database (on Linux, you may need to use sudo for the following commands):
 
 ```bash
 docker-compose --env-file .env up -d postgres

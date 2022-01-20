@@ -2,14 +2,14 @@ package repository
 
 import "github.com/jmoiron/sqlx"
 
-type repository struct {
+type healthRepo struct {
 	db *sqlx.DB
 }
 
-func NewHealthRepository(db *sqlx.DB) *repository {
-	return &repository{db: db}
+func NewHealthRepository(db *sqlx.DB) *healthRepo {
+	return &healthRepo{db: db}
 }
 
-func (r *repository) Readiness() error {
+func (r *healthRepo) Readiness() error {
 	return r.db.Ping()
 }

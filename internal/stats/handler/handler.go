@@ -17,7 +17,7 @@ func NewStatsHander(logger *zap.SugaredLogger, statsUC stats.UseCase) stats.Hand
 	return &statsHandler{logger: logger, statsUC: statsUC}
 }
 
-func (s *statsHandler) GetStats() echo.HandlerFunc {
+func (h *statsHandler) GetStats() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		filter := &stats.Filter{}
 		if err := filter.Bind(c); err != nil {
@@ -25,7 +25,7 @@ func (s *statsHandler) GetStats() echo.HandlerFunc {
 		}
 
 		ctx := c.Request().Context()
-		stats, err := s.statsUC.GetStats(ctx, filter)
+		stats, err := h.statsUC.GetStats(ctx, filter)
 		if err != nil {
 			return c.JSON(response.Error(err))
 		}

@@ -9,7 +9,7 @@ curl --request GET \
   --url http://localhost:6000/api/v1/stats/
 ```
 
-- Filter stats for the customer
+- Filter stats for a given customer
 
 ```bash
 curl --request GET \
