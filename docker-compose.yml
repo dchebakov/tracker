@@ -9,11 +9,37 @@ services:
       - POSTGRES_PASSWORD=${DB_PASS}
       - POSTGRES_DB=${DB_NAME}
     ports:
-      - ${DB_PORT}:5432
-    expose:
-      - "5432"
+      - ${DB_PUBLIC_PORT}:5432
     volumes:
       - tracker_postgres:/var/lib/postgresql/data
+    networks:
+      - api
+
+  migrate:
+    container_name: tracker_migrate
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile.migrate
+    depends_on:
+      - postgres
+    networks:
+      - api
+
+  api:
+    container_name: tracker_api
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile.api
+    ports:
+      - ${API_PORT}:${API_PORT}
+    depends_on:
+      - postgres
+    networks:
+      - api
 
 volumes:
   tracker_postgres:
+
+networks:
+  api:
+    driver: bridge
