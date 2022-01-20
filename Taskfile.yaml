@@ -1,0 +1,61 @@
+version: "3"
+
+dotenv:
+  - ".env"
+
+tasks:
+  default:
+    desc: Lists available commands
+    cmds:
+      - task -l
+
+  list:
+    desc: Lists available commands
+    cmds:
+      - task -l
+
+  init:env:
+    desc: Initialize environment variables with development defaults
+    cmds:
+      - cp env.example .env
+
+  dev:
+    desc: Runs the app in watch mode
+    cmds:
+      - air
+
+  tidy:
+    desc: Downloads dependencies and removes unused ones
+    cmds:
+      - go mod tidy
+
+  start:postgres:
+    desc: Start postgres database
+    cmds:
+      - docker-compose --env-file .env up -d postgres
+
+  install:tools:
+    desc: Install all cli tools
+    cmds:
+      - task: install:swagger
+      - task: install:air
+
+  install:swagger:
+    desc: Install swagger cli
+    cmds:
+      - go install github.com/swaggo/swag/cmd/swag@latest
+
+  install:air:
+    desc: Install a hot reloader
+    cmds:
+      - go install github.com/cosmtrek/air@latest
+
+  migrate:
+    desc: Migrate to the latest revision
+    cmds:
+      - go run cmd/migrate/main.go
+
+  migrate:create:
+    desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME=name_of_file'
+    cmds:
+      - migrate create -ext sql -dir migrations -format unix "{{.NAME}}"
