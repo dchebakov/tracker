@@ -1,12 +1,13 @@
+# Examples of using Health API
+# for vscode users, install `REST Client` to use these examples (or use commented curl CLI calls).
+
 @host = http://localhost:6000
 @method = api/v1/health
 
 # Health server check
-
 GET {{host}}/{{method}}/
 
 ###
 
 # DB connection check
-
 GET {{host}}/{{method}}/readiness

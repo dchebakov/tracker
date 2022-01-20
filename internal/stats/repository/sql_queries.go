@@ -1,0 +1,37 @@
+package repository
+
+const createHourStats = `--sql
+INSERT INTO hourly_stats (customer_id, time, request_count, invalid_count)
+VALUES (
+    $1,
+    (
+      SELECT date_trunc('hour', to_timestamp($2))
+    ),
+    $3,
+    $4
+  )
+RETURNING *;
+`
+
+const getHourStatsQuery = `--sql
+SELECT id,
+  customer_id,
+  time,
+  request_count,
+  invalid_count
+FROM hourly_stats
+WHERE customer_id = $1
+  AND time >= (
+    SELECT date_trunc('hour', to_timestamp($2))
+  )
+  AND time < (
+    SELECT date_trunc('hour', to_timestamp($2)) + INTERVAL '1' HOUR
+  );
+`
+
+const updateStatsQuery = `--sql
+UPDATE hourly_stats
+SET request_count = request_count + $2,
+  invalid_count = invalid_count + $3
+WHERE id = $1;
+`

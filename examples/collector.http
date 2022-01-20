@@ -1,8 +1,10 @@
+# Examples of using Collector API
+# for vscode users, install `REST Client` to use these examples (or use commented curl CLI calls).
+
 @host = http://localhost:6000
 @method = api/v1/collect/
 
 # Valid collector requst
-
 POST {{host}}/{{method}}
 Content-Type: application/json
 
@@ -17,17 +19,14 @@ Content-Type: application/json
 ###
 
 # Malformed JSON call
-
 POST {{host}}/api/v1/collect/
 Content-Type: application/json
 
 "{"
 
-
 ###
 
-# Missing userID field
-
+# Missed userID field, saves API call as invalid
 POST {{host}}/{{method}}
 Content-Type: application/json
 
@@ -36,4 +35,88 @@ Content-Type: application/json
   "tagID": 2,
   "remoteIP": "123.234.56.78",
   "timestamp": 1500000000
+}
+
+###
+
+# Missed customerID filed so the collector wouldn't update any DB record
+POST {{host}}/{{method}}
+Content-Type: application/json
+
+{
+  "tagID": 2,
+  "userID": "aaaaaaaa-bbbb-cccc-1111-222222222222",
+  "remoteIP": "123.234.56.78",
+  "timestamp": 1500000000
+}
+
+###
+
+# Non-existing customer so the collector wouldn't update any DB record
+POST {{host}}/{{method}}
+Content-Type: application/json
+
+{
+  "customerID": 1000000,
+  "tagID": 2,
+  "userID": "aaaaaaaa-bbbb-cccc-1111-222222222222",
+  "remoteIP": "123.234.56.78",
+  "timestamp": 1500000000
+}
+
+###
+
+# Non-actie user so the request will be counted as invalid
+POST {{host}}/{{method}}
+Content-Type: application/json
+
+{
+  "customerID": 3,
+  "tagID": 2,
+  "userID": "aaaaaaaa-bbbb-cccc-1111-222222222222",
+  "remoteIP": "123.234.56.78",
+  "timestamp": 1500000000
+}
+
+###
+
+# Blocked IP so the request will be counted as invalid
+POST {{host}}/{{method}}
+Content-Type: application/json
+
+{
+  "customerID": 1,
+  "tagID": 2,
+  "userID": "aaaaaaaa-bbbb-cccc-1111-222222222222",
+  "remoteIP": "213.070.64.33",
+  "timestamp": 1500000000
+}
+
+###
+
+# Blocked User Agent so the request will be counted as invalid
+POST {{host}}/{{method}}
+Content-Type: application/json
+User-Agent: Googlebot
+
+{
+  "customerID": 1,
+  "tagID": 2,
+  "userID": "aaaaaaaa-bbbb-cccc-1111-222222222222",
+  "remoteIP": "123.234.56.78",
+  "timestamp": 1500000000
+}
+
+###
+
+# Making valid API call for the next hour (2017-07-14 03:16:00), so new DB record will be created
+POST {{host}}/{{method}}
+Content-Type: application/json
+
+{
+  "customerID": 1,
+  "tagID": 2,
+  "userID": "aaaaaaaa-bbbb-cccc-1111-222222222222",
+  "remoteIP": "123.234.56.78",
+  "timestamp": 1500002160
 }
