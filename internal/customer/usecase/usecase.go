@@ -24,8 +24,8 @@ func NewCustomerUseCase(
 	return &customerUC{customerRepo: customerRepo, logger: logger}
 }
 
-func (c *customerUC) GetByID(ctx context.Context, id int64) (*models.Customer, error) {
-	customer, err := c.customerRepo.GetByID(ctx, id)
+func (u *customerUC) GetByID(ctx context.Context, id int64) (*models.Customer, error) {
+	customer, err := u.customerRepo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, httperrors.NewRestError(

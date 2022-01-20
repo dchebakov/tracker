@@ -35,12 +35,12 @@ func NewCollectorUseCase(
 	}
 }
 
-func (c *collectorUC) isLogValid(
+func (u *collectorUC) isLogValid(
 	ctx context.Context,
 	log *collector.CollectorLog,
 	ua string,
 ) (bool, error) {
-	customer, err := c.customerUC.GetByID(ctx, log.CustomerID)
+	customer, err := u.customerUC.GetByID(ctx, log.CustomerID)
 	if err != nil {
 		return false, err
 	}
@@ -66,7 +66,7 @@ func (c *collectorUC) isLogValid(
 		return false, nil
 	}
 
-	ipBlacklisted, err := c.blacklistUC.IsIPBlacklisted(ctx, utils.IPp2int(ip))
+	ipBlacklisted, err := u.blacklistUC.IsIPBlacklisted(ctx, utils.IPp2int(ip))
 	if err != nil {
 		return false, err
 	}
@@ -74,7 +74,7 @@ func (c *collectorUC) isLogValid(
 		return false, nil
 	}
 
-	uaBlacklisted, err := c.blacklistUC.IsUABlacklisted(ctx, ua)
+	uaBlacklisted, err := u.blacklistUC.IsUABlacklisted(ctx, ua)
 	if err != nil {
 		return false, err
 	}
@@ -85,11 +85,11 @@ func (c *collectorUC) isLogValid(
 	return true, nil
 }
 
-func (c *collectorUC) isLogValidPartially(
+func (u *collectorUC) isLogValidPartially(
 	ctx context.Context,
 	log *collector.CollectorLog,
 ) (bool, error) {
-	_, err := c.customerUC.GetByID(ctx, log.CustomerID)
+	_, err := u.customerUC.GetByID(ctx, log.CustomerID)
 	if err != nil {
 		return false, err
 	}
@@ -97,36 +97,36 @@ func (c *collectorUC) isLogValidPartially(
 	return true, nil
 }
 
-func (c *collectorUC) UpdateStats(
+func (u *collectorUC) UpdateStats(
 	ctx context.Context,
 	log *collector.CollectorLog,
 	ua string,
 ) error {
-	valid, err := c.isLogValid(ctx, log, ua)
+	valid, err := u.isLogValid(ctx, log, ua)
 	if err != nil {
 		return err
 	}
 
 	hour := time.Unix(log.Timestamp, 0).Truncate(time.Hour)
 	if valid {
-		c.logger.Debugw("Log is valid", "log", log)
-		return c.statsUC.UpdateStats(ctx, log.CustomerID, hour, true)
+		u.logger.Debugw("Log is valid", "log", log)
+		return u.statsUC.UpdateStats(ctx, log.CustomerID, hour, true)
 	}
 
-	validPartially, err := c.isLogValidPartially(ctx, log)
+	validPartially, err := u.isLogValidPartially(ctx, log)
 	if err != nil {
 		return err
 	}
 
 	if validPartially {
-		c.logger.Debug("Log is valid partially", "log", log)
-		err := c.statsUC.UpdateStats(ctx, log.CustomerID, hour, false)
+		u.logger.Debug("Log is valid partially", "log", log)
+		err := u.statsUC.UpdateStats(ctx, log.CustomerID, hour, false)
 		if err != nil {
-			c.logger.Errorw("Failed to save partially valid log", "err", err)
+			u.logger.Errorw("Failed to save partially valid log", "err", err)
 			return err
 		}
 
-		c.logger.Debug("Saved call as invalid")
+		u.logger.Debug("Saved call as invalid")
 		return httperrors.NewBadRequestError(nil)
 	}
 

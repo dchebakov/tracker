@@ -1,6 +1,6 @@
 package repository
 
-const createHourStats = `--sql
+const createHourStatsQuery = `--sql
 INSERT INTO hourly_stats (customer_id, time, request_count, invalid_count)
 VALUES (
     $1,

@@ -11,6 +11,7 @@ import (
 	hlrepository "github.com/dchebakov/tracker/internal/health/repository"
 	hlusecase "github.com/dchebakov/tracker/internal/health/usecase"
 	tmiddlewares "github.com/dchebakov/tracker/internal/middleware"
+	sthandler "github.com/dchebakov/tracker/internal/stats/handler"
 	strepository "github.com/dchebakov/tracker/internal/stats/repository"
 	stusecase "github.com/dchebakov/tracker/internal/stats/usecase"
 	"github.com/labstack/echo/v4/middleware"
@@ -30,6 +31,7 @@ func (s *Server) RegisterHandlers() {
 
 	healthHandler := hlhandler.NewHelthHandler(s.logger, healthUC)
 	collectorHandler := clhandler.NewCollectorHandler(s.logger, s.validate, collectorUC)
+	statsHandler := sthandler.NewStatsHander(s.logger, statsUC)
 
 	mw := tmiddlewares.NewMiddlewareManager(s.logger)
 	s.echo.Use(middleware.BodyLimit("2M"))
@@ -37,9 +39,7 @@ func (s *Server) RegisterHandlers() {
 
 	v1 := s.echo.Group("/api/v1")
 
-	healthGroup := v1.Group("/health")
-	healthHandler.RegisterHTTPEndPoints(healthGroup)
-
-	collectorGroup := v1.Group("/collect")
-	collectorHandler.RegisterHTTPEndPoints(collectorGroup)
+	healthHandler.RegisterHTTPEndPoints(v1)
+	collectorHandler.RegisterHTTPEndPoints(v1)
+	statsHandler.RegisterHTTPEndPoints(v1)
 }

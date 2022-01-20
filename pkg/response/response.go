@@ -7,14 +7,15 @@ import (
 )
 
 type Response struct {
-	Status  string  `json:"status"`
-	Message *string `json:"message,omitempty"`
+	Status  string      `json:"status"`
+	Message *string     `json:"message,omitempty"`
+	Payload interface{} `json:"payload,omitempty"`
 }
 
-func Ok(message *string) (int, Response) {
+func Ok(payload interface{}) (int, Response) {
 	return http.StatusOK, Response{
 		Status:  "ok",
-		Message: message,
+		Payload: payload,
 	}
 }
 

@@ -5,10 +5,7 @@ CREATE TABLE "customer" (
   PRIMARY KEY ("id")
 );
 
-CREATE TABLE "ip_blacklist" (
-  "ip" bigint NOT NULL,
-  PRIMARY KEY ("ip")
-);
+CREATE TABLE "ip_blacklist" ("ip" bigint NOT NULL, PRIMARY KEY ("ip"));
 
 CREATE TABLE "ua_blacklist" (
   "ua" varchar(255) NOT NULL,

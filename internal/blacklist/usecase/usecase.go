@@ -20,8 +20,8 @@ func NewBlacklistUseCase(
 	return &blacklistUC{logger: logger, blacklistRepo: blacklistRepo}
 }
 
-func (b *blacklistUC) IsIPBlacklisted(ctx context.Context, ip uint32) (bool, error) {
-	blacklisted, err := b.blacklistRepo.HasIP(ctx, ip)
+func (u *blacklistUC) IsIPBlacklisted(ctx context.Context, ip uint32) (bool, error) {
+	blacklisted, err := u.blacklistRepo.HasIP(ctx, ip)
 	if err != nil {
 		return false, httperrors.NewInternalServerError(err)
 	}
@@ -29,8 +29,8 @@ func (b *blacklistUC) IsIPBlacklisted(ctx context.Context, ip uint32) (bool, err
 	return blacklisted, nil
 }
 
-func (b *blacklistUC) IsUABlacklisted(ctx context.Context, ua string) (bool, error) {
-	blacklisted, err := b.blacklistRepo.HasUA(ctx, ua)
+func (u *blacklistUC) IsUABlacklisted(ctx context.Context, ua string) (bool, error) {
+	blacklisted, err := u.blacklistRepo.HasUA(ctx, ua)
 	if err != nil {
 		return false, httperrors.NewInternalServerError(err)
 	}

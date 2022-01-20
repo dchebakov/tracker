@@ -8,6 +8,7 @@ import (
 
 	"github.com/dchebakov/tracker/internal/models"
 	"github.com/dchebakov/tracker/internal/stats"
+	"github.com/dchebakov/tracker/pkg/utils"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 )
@@ -20,16 +21,17 @@ type statsRepo struct {
 func NewStatsRepository(db *sqlx.DB, logger *zap.SugaredLogger) stats.Repository {
 	return &statsRepo{db: db, logger: logger}
 }
-
-func (r *statsRepo) getHourStats(
+func getHourStatsTx(
 	ctx context.Context,
+	tx *sqlx.Tx,
+	logger *zap.SugaredLogger,
 	customerID int64,
 	hour time.Time,
 ) (*models.HourlyStats, error) {
 	stats := &models.HourlyStats{}
-	err := r.db.QueryRowxContext(ctx, getHourStatsQuery, customerID, hour.Unix()).StructScan(stats)
+	err := tx.QueryRowxContext(ctx, getHourStatsQuery, customerID, hour.Unix()).StructScan(stats)
 	if err != nil {
-		r.logger.Errorw(
+		logger.Errorw(
 			"Failed to find stats for the customer and given hour",
 			"customerID",
 			customerID,
@@ -44,8 +46,9 @@ func (r *statsRepo) getHourStats(
 	return stats, nil
 }
 
-func (r *statsRepo) createHourStats(
+func createHourStatsTx(
 	ctx context.Context,
+	tx *sqlx.Tx,
 	customerID int64,
 	hour time.Time,
 	valid bool,
@@ -57,7 +60,7 @@ func (r *statsRepo) createHourStats(
 		invalidDelta = 1
 	}
 
-	err := r.db.QueryRowxContext(ctx, createHourStats, customerID, hour.Unix(), validDelta, invalidDelta).
+	err := tx.QueryRowxContext(ctx, createHourStatsQuery, customerID, hour.Unix(), validDelta, invalidDelta).
 		StructScan(stats)
 	if err != nil {
 		return nil, err
@@ -66,14 +69,14 @@ func (r *statsRepo) createHourStats(
 	return stats, nil
 }
 
-func (r *statsRepo) updateHourStats(ctx context.Context, statsID int64, valid bool) error {
+func updateHourStatsTx(ctx context.Context, tx *sqlx.Tx, statsID int64, valid bool) error {
 	validDelta := 1
 	invalidDelta := 0
 	if !valid {
 		invalidDelta = 1
 	}
 
-	_, err := r.db.ExecContext(ctx, updateStatsQuery, statsID, validDelta, invalidDelta)
+	_, err := tx.ExecContext(ctx, updateStatsQuery, statsID, validDelta, invalidDelta)
 	if err != nil {
 		return err
 	}
@@ -81,35 +84,45 @@ func (r *statsRepo) updateHourStats(ctx context.Context, statsID int64, valid bo
 	return nil
 }
 
-// TODO: make trunsaction there
+func (r *statsRepo) updateStatsTx(
+	ctx context.Context,
+	customerID int64,
+	hour time.Time,
+	valid bool,
+) func(tr *sqlx.Tx) error {
+	return func(tx *sqlx.Tx) error {
+		stats, err := getHourStatsTx(ctx, tx, r.logger, customerID, hour)
+		if err == nil {
+			err = updateHourStatsTx(ctx, tx, stats.ID, valid)
+			if err != nil {
+				return err
+			}
+
+			r.logger.Debugw("Updated stats of existed record", "statsID", stats.ID)
+			return nil
+		}
+
+		if !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
+
+		_, err = createHourStatsTx(ctx, tx, customerID, hour, valid)
+		r.logger.Debug("Created new hourly stats record")
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
 func (r *statsRepo) UpdateStats(
 	ctx context.Context,
 	customerID int64,
 	hour time.Time,
 	valid bool,
 ) error {
-	stats, err := r.getHourStats(ctx, customerID, hour)
-	if err == nil {
-		err = r.updateHourStats(ctx, stats.ID, valid)
-		if err != nil {
-			return err
-		}
-
-		r.logger.Debugw("Updated stats of existed record", "statsID", stats.ID)
-		return nil
-	}
-
-	if !errors.Is(err, sql.ErrNoRows) {
-		return err
-	}
-
-	_, err = r.createHourStats(ctx, customerID, hour, valid)
-	r.logger.Debug("Created new hourly stats record")
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return utils.Transact(ctx, r.db, r.updateStatsTx(ctx, customerID, hour, valid))
 }
 
 func (r *statsRepo) getStatsRows(ctx context.Context, filter *stats.Filter) (*sqlx.Rows, error) {
